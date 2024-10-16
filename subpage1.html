@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subpage 1</title>
+  <title>Shuffled Throws</title>
 
   <!-- Include Material Design Lite CSS -->
   <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
@@ -28,6 +28,8 @@
       border: 1px solid #E0E0E0;
       border-radius: 5px;
       transition: background-color 0.3s;
+      font-weight: bold;
+      
     }
     .edit-icon {
       cursor: pointer;
@@ -43,6 +45,7 @@
       text-align: center;
       line-height: 30px;
       margin-right: 10px;
+      font-weight: bold;
     }
     .shuffled-number {
       background-color: #FFC107; /* Different color for shuffled number */
@@ -75,14 +78,14 @@
           <i class="material-icons">home</i>
         </a>
       </div>
-      <span class="mdl-layout-title">Subpage 1</span>
+      <span class="mdl-layout-title">Shuffled Throws</span>
     </div>
   </header>
 
   <!-- Page content -->
   <main class="mdl-layout__content">
     <div class="page-content">
-      <h4>Enter Alphanumeric String</h4>
+      <h4>Enter a name</h4>
 
       <!-- Text input field and Add button -->
       <div id="input-section">
@@ -100,7 +103,7 @@
 
       <!-- Confirm button -->
       <button id="confirmEntries" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
-        Confirm All Entries
+        Confirm all entries
       </button>
 
       <!-- Shuffle button (hidden initially) -->
@@ -118,6 +121,20 @@
     const entryList = document.getElementById('entryList');
     const confirmButton = document.getElementById('confirmEntries');
     const shuffleButton = document.getElementById('shuffleEntries');
+
+    const colors = [
+    '#F44336', // Red
+    '#E91E63', // Pink
+    '#9C27B0', // Purple
+    '#673AB7', // Deep Purple
+    '#3F51B5', // Indigo
+    '#2196F3', // Blue
+    '#03A9F4', // Light Blue
+    '#00BCD4', // Cyan
+    '#009688', // Teal
+    '#4CAF50'  // Green
+    ];
+
 
     // Function to add a new entry
     document.getElementById('addEntry').addEventListener('click', addEntry);
@@ -138,36 +155,47 @@
 
     // Function to display the entries in the list
     function displayEntries() {
-      entryList.innerHTML = '';  // Clear the existing list
-      entries.forEach((entry, index) => {
-        const entryItem = document.createElement('div');
-        entryItem.className = 'entry-item';
+        entryList.innerHTML = '';  // Clear the existing list
+        entries.forEach((entry, index) => {
+            const entryItem = document.createElement('div');
+            entryItem.className = 'entry-item';
 
-        const entryNumber = document.createElement('div');
-        entryNumber.className = 'circle-number';
-        entryNumber.innerText = index + 1;
+            const entryNumber = document.createElement('div');
+            entryNumber.className = 'circle-number';
+            entryNumber.innerText = index + 1;
+            entryNumber.style.backgroundColor = colors[index % colors.length]; // Assign color
 
-        const entryText = document.createElement('span');
-        entryText.innerText = entry;
+            const entryText = document.createElement('span');
+            entryText.innerText = entry;
+            entryText.style.color = getContrastYIQ(colors[index % colors.length]); // Set text color based on background color
 
-        const editButton = document.createElement('i');
-        editButton.className = 'material-icons edit-icon';
-        editButton.innerText = 'edit';
-        editButton.addEventListener('click', function() {
-          editEntry(index);
+            const editButton = document.createElement('i');
+            editButton.className = 'material-icons edit-icon';
+            editButton.innerText = 'edit';
+            editButton.addEventListener('click', function() {
+            editEntry(index);
+            });
+
+            // Exclude entry from shuffle when clicked/tapped
+            entryItem.addEventListener('click', function() {
+            toggleExclude(index, entryItem);
+            });
+
+            entryItem.appendChild(entryNumber);
+            entryItem.appendChild(entryText);
+            entryItem.appendChild(editButton);
+            entryList.appendChild(entryItem);
         });
-
-        // Exclude entry from shuffle when clicked/tapped
-        entryItem.addEventListener('click', function() {
-          toggleExclude(index, entryItem);
-        });
-
-        entryItem.appendChild(entryNumber);
-        entryItem.appendChild(entryText);
-        entryItem.appendChild(editButton);
-        entryList.appendChild(entryItem);
-      });
     }
+
+    function getContrastYIQ(hexcolor){
+        const r = parseInt(hexcolor.slice(1,3),16);
+        const g = parseInt(hexcolor.slice(3,5),16);
+        const b = parseInt(hexcolor.slice(5,7),16);
+        const yiq = ((r*299)+(g*587)+(b*114))/1000;
+        return (yiq >= 128) ? 'black' : 'white';
+    }
+
 
     // Function to edit an entry
     function editEntry(index) {
