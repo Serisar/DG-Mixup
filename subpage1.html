@@ -8,19 +8,131 @@
   <!-- Include Material Design Lite CSS -->
   <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
   <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+
+  <!-- Google Fonts for icons -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+  <style>
+    .page-content {
+      padding: 16px;
+    }
+    .entry-list {
+      margin-top: 20px;
+    }
+    .entry-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #E0E0E0;
+      border-radius: 5px;
+    }
+    .edit-icon {
+      cursor: pointer;
+      color: #3F51B5;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
+
+  <!-- Header with Return to Homepage -->
   <header class="mdl-layout__header">
     <div class="mdl-layout__header-row">
       <span class="mdl-layout-title">Subpage 1</span>
+      <div class="mdl-layout-spacer"></div>
+      <a href="index.html" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+        Back to Home
+      </a>
     </div>
   </header>
 
+  <!-- Page content -->
   <main class="mdl-layout__content">
     <div class="page-content">
-      <h4>Welcome to Subpage 1</h4>
-      <p>This is the content for Subpage 1.</p>
+      <h4>Enter Alphanumeric String</h4>
+
+      <!-- Text input field and Add button -->
+      <div id="input-section">
+        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+          <input class="mdl-textfield__input" type="text" id="entryInput">
+          <label class="mdl-textfield__label" for="entryInput">Enter a string...</label>
+        </div>
+        <button id="addEntry" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
+          Add
+        </button>
+      </div>
+
+      <!-- List of entries -->
+      <div class="entry-list" id="entryList"></div>
+
+      <!-- Confirm button -->
+      <button id="confirmEntries" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
+        Confirm All Entries
+      </button>
+
     </div>
   </main>
+
+  <script>
+    let entries = [];
+    const entryInput = document.getElementById('entryInput');
+    const entryList = document.getElementById('entryList');
+    const confirmButton = document.getElementById('confirmEntries');
+
+    // Function to add a new entry
+    document.getElementById('addEntry').addEventListener('click', function() {
+      const value = entryInput.value.trim();
+      if (value) {
+        entries.push(value);
+        displayEntries();
+        entryInput.value = '';  // Clear the input field after entry
+      }
+    });
+
+    // Function to display the entries in the list
+    function displayEntries() {
+      entryList.innerHTML = '';  // Clear the existing list
+      entries.forEach((entry, index) => {
+        const entryItem = document.createElement('div');
+        entryItem.className = 'entry-item';
+
+        const entryText = document.createElement('span');
+        entryText.innerText = entry;
+
+        // Edit button with a pen icon
+        const editButton = document.createElement('i');
+        editButton.className = 'material-icons edit-icon';
+        editButton.innerText = 'edit';
+        editButton.addEventListener('click', function() {
+          editEntry(index);
+        });
+
+        // Append the entry text and edit button to the list item
+        entryItem.appendChild(entryText);
+        entryItem.appendChild(editButton);
+        entryList.appendChild(entryItem);
+      });
+    }
+
+    // Function to edit an entry
+    function editEntry(index) {
+      const newEntry = prompt('Edit the entry:', entries[index]);
+      if (newEntry !== null) {
+        entries[index] = newEntry.trim();  // Update the entry
+        displayEntries();  // Refresh the list
+      }
+    }
+
+    // Confirm all entries and disable input
+    confirmButton.addEventListener('click', function() {
+      document.getElementById('input-section').classList.add('hidden');  // Hide the input section
+      confirmButton.classList.add('hidden');  // Hide the confirm button
+    });
+  </script>
+
 </body>
 </html>
