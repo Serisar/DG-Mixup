@@ -13,24 +13,49 @@
   <!-- Optional: Google Fonts for better typography -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
   
-  <!-- Add custom CSS for additional styling -->
+  <!-- Add custom CSS for responsive layout and styling -->
   <style>
     .page-content {
       padding: 16px;
     }
+
+    /* Flex container for the cards */
+    .card-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+
     .mdl-card {
-      width: 100%;
+      width: 100%; /* Default to full width for mobile */
       margin-bottom: 20px;
     }
+
+    /* For wider screens (landscape or desktop) */
+    @media(min-width: 768px) {
+      .mdl-card {
+        width: 45%; /* Take 45% of the width, two cards per row */
+      }
+    }
+
+    /* For even wider screens (desktops with larger resolutions) */
+    @media(min-width: 1024px) {
+      .mdl-card {
+        width: 30%; /* Take 30% of the width, three cards per row */
+      }
+    }
+
     .mdl-card__title {
       background-color: #3F51B5;
       color: white;
       padding: 16px;
     }
+
     .mdl-card__actions {
       display: flex;
       justify-content: flex-end;
     }
+
     .mdl-button {
       color: #3F51B5;
     }
@@ -53,49 +78,54 @@
       <div class="page-content">
         <h3>Subpages</h3>
 
-        <!-- Card for Subpage 1 -->
-        <div class="mdl-card mdl-shadow--4dp">
-          <div class="mdl-card__title">
-            <h2 class="mdl-card__title-text">Subpage 1</h2>
-          </div>
-          <div class="mdl-card__supporting-text">
-            Short description of Subpage 1.
-          </div>
-          <div class="mdl-card__actions mdl-card--border">
-            <a href="subpage1.html" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--colored">
-              Go to Subpage 1
-            </a>
-          </div>
-        </div>
+        <!-- Card container to hold subpage cards -->
+        <div class="card-container">
 
-        <!-- Card for Subpage 2 -->
-        <div class="mdl-card mdl-shadow--4dp">
-          <div class="mdl-card__title">
-            <h2 class="mdl-card__title-text">Subpage 2</h2>
+          <!-- Card for Subpage 1 -->
+          <div class="mdl-card mdl-shadow--4dp">
+            <div class="mdl-card__title">
+              <h2 class="mdl-card__title-text">Subpage 1</h2>
+            </div>
+            <div class="mdl-card__supporting-text">
+              Short description of Subpage 1.
+            </div>
+            <div class="mdl-card__actions mdl-card--border">
+              <a href="subpage1.html" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+                Go to Subpage 1
+              </a>
+            </div>
           </div>
-          <div class="mdl-card__supporting-text">
-            Short description of Subpage 2.
-          </div>
-          <div class="mdl-card__actions mdl-card--border">
-            <a href="subpage2.html" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--colored">
-              Go to Subpage 2
-            </a>
-          </div>
-        </div>
 
-        <!-- Card for Subpage 3 -->
-        <div class="mdl-card mdl-shadow--4dp">
-          <div class="mdl-card__title">
-            <h2 class="mdl-card__title-text">Subpage 3</h2>
+          <!-- Card for Subpage 2 -->
+          <div class="mdl-card mdl-shadow--4dp">
+            <div class="mdl-card__title">
+              <h2 class="mdl-card__title-text">Subpage 2</h2>
+            </div>
+            <div class="mdl-card__supporting-text">
+              Short description of Subpage 2.
+            </div>
+            <div class="mdl-card__actions mdl-card--border">
+              <a href="subpage2.html" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+                Go to Subpage 2
+              </a>
+            </div>
           </div>
-          <div class="mdl-card__supporting-text">
-            Short description of Subpage 3.
+
+          <!-- Card for Subpage 3 -->
+          <div class="mdl-card mdl-shadow--4dp">
+            <div class="mdl-card__title">
+              <h2 class="mdl-card__title-text">Subpage 3</h2>
+            </div>
+            <div class="mdl-card__supporting-text">
+              Short description of Subpage 3.
+            </div>
+            <div class="mdl-card__actions mdl-card--border">
+              <a href="subpage3.html" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+                Go to Subpage 3
+              </a>
+            </div>
           </div>
-          <div class="mdl-card__actions mdl-card--border">
-            <a href="subpage3.html" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--colored">
-              Go to Subpage 3
-            </a>
-          </div>
+
         </div>
 
       </div>

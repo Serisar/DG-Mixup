@@ -9,239 +9,141 @@
   <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
   <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
 
-  <!-- Google Fonts for icons -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-
   <style>
     .page-content {
       padding: 16px;
     }
-    .entry-list {
-      margin-top: 20px;
+    .mdl-card {
+      margin-bottom: 20px;
     }
-    .entry-item {
+    .user-entry {
       display: flex;
       align-items: center;
-      justify-content: space-between;
       margin-bottom: 10px;
-      padding: 10px;
-      border: 1px solid #E0E0E0;
-      border-radius: 5px;
-      transition: background-color 0.3s;
     }
-    .edit-icon {
-      cursor: pointer;
-      color: #3F51B5;
-    }
-    .circle-number {
-      display: inline-block;
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      background-color: #3F51B5;
-      color: white;
-      text-align: center;
-      line-height: 30px;
-      margin-right: 10px;
+    .user-name {
+      flex: 1;
+      font-weight: bold;
     }
     .shuffled-number {
-      background-color: #FFC107; /* Different color for shuffled number */
-    }
-    .hidden {
-      display: none;
-    }
-    .icon-button {
-      position: absolute;
-      top: 16px;
-      left: 16px;
+      margin-left: 10px;
+      font-weight: bold;
+      padding: 5px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      color: white; /* Default text color */
     }
     .greyed-out {
-      background-color: #E0E0E0;
-      color: #9E9E9E;
+      color: grey;
+      opacity: 0.5;
     }
     .arrow {
-      margin-left: 10px;
-      margin-right: 10px;
+      margin: 0 5px;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
-  <!-- Header with Return to Homepage (House Icon) -->
-  <header class="mdl-layout__header">
-    <div class="mdl-layout__header-row">
-      <div class="icon-button">
-        <a href="index.html" class="mdl-button mdl-js-button mdl-button--icon">
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <header class="mdl-layout__header mdl-layout__header--waterfall">
+      <div class="mdl-layout__header-row">
+        <a href="index.html" class="mdl-button mdl-js-button mdl-js-ripple-effect">
           <i class="material-icons">home</i>
         </a>
+        <span class="mdl-layout-title">Subpage 1</span>
+        <div class="mdl-layout-spacer"></div>
       </div>
-      <span class="mdl-layout-title">Subpage 1</span>
-    </div>
-  </header>
+    </header>
 
-  <!-- Page content -->
-  <main class="mdl-layout__content">
-    <div class="page-content">
-      <h4>Enter Alphanumeric String</h4>
+    <main class="mdl-layout__content">
+      <div class="page-content">
+        <h3>Add Entry</h3>
+        <input type="text" id="userInput" placeholder="Enter alphanumeric string" class="mdl-textfield__input">
+        <button id="confirmButton" class="mdl-button mdl-js-button mdl-js-ripple-effect">Confirm</button>
+        <button id="shuffleButton" class="mdl-button mdl-js-button mdl-js-ripple-effect">Shuffle</button>
 
-      <!-- Text input field and Add button -->
-      <div id="input-section">
-        <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
-          <input class="mdl-textfield__input" type="text" id="entryInput">
-          <label class="mdl-textfield__label" for="entryInput">Enter a string...</label>
-        </div>
-        <button id="addEntry" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored">
-          Add
-        </button>
+        <h3>User Entries</h3>
+        <div id="userList"></div>
       </div>
-
-      <!-- List of entries -->
-      <div class="entry-list" id="entryList"></div>
-
-      <!-- Confirm button -->
-      <button id="confirmEntries" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">
-        Confirm All Entries
-      </button>
-
-      <!-- Shuffle button (hidden initially) -->
-      <button id="shuffleEntries" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored hidden">
-        Shuffle
-      </button>
-
-    </div>
-  </main>
+    </main>
+  </div>
 
   <script>
-    let entries = [];
-    let excludedIndices = new Set(); // To track excluded entries
-    const entryInput = document.getElementById('entryInput');
-    const entryList = document.getElementById('entryList');
-    const confirmButton = document.getElementById('confirmEntries');
-    const shuffleButton = document.getElementById('shuffleEntries');
+    const userInput = document.getElementById('userInput');
+    const confirmButton = document.getElementById('confirmButton');
+    const shuffleButton = document.getElementById('shuffleButton');
+    const userList = document.getElementById('userList');
 
-    // Function to add a new entry
-    document.getElementById('addEntry').addEventListener('click', addEntry);
-    entryInput.addEventListener('keypress', function(event) {
-      if (event.key === 'Enter') {
-        addEntry();
+    const users = [];
+    const excludedIndices = new Set();
+
+    // Color palette for users (10 contrasting colors)
+    const colors = [
+      '#FF5733', '#33FF57', '#3357FF', '#FF33A8', '#FFBD33', 
+      '#33FFF5', '#B833FF', '#FF3333', '#33FFB5', '#F4FF33'
+    ];
+
+    // Confirm button functionality
+    confirmButton.addEventListener('click', () => {
+      const userName = userInput.value.trim();
+      if (userName) {
+        users.push({ name: userName, color: colors[users.length % colors.length] }); // Assign color dynamically
+        userInput.value = '';
+        renderUsers();
       }
     });
 
-    function addEntry() {
-      const value = entryInput.value.trim();
-      if (value) {
-        entries.push(value);
-        displayEntries();
-        entryInput.value = '';  // Clear the input field after entry
-      }
-    }
+    // Shuffle button functionality
+    shuffleButton.addEventListener('click', () => {
+      const shuffledIndices = [...Array(users.length).keys()].filter(i => !excludedIndices.has(i));
+      const shuffledNumbers = shuffleArray(shuffledIndices);
+      renderShuffledNumbers(shuffledNumbers);
+    });
 
-    // Function to display the entries in the list
-    function displayEntries() {
-      entryList.innerHTML = '';  // Clear the existing list
-      entries.forEach((entry, index) => {
+    // Function to render user entries
+    function renderUsers() {
+      userList.innerHTML = ''; // Clear previous entries
+      users.forEach((user, index) => {
         const entryItem = document.createElement('div');
-        entryItem.className = 'entry-item';
+        entryItem.className = `user-entry ${excludedIndices.has(index) ? 'greyed-out' : ''}`;
+        entryItem.style.color = user.color; // Set user-specific color
 
-        const entryNumber = document.createElement('div');
-        entryNumber.className = 'circle-number';
-        entryNumber.innerText = index + 1;
+        // User name and arrow
+        entryItem.innerHTML = `
+          <span class="user-name">${user.name}</span>
+          <span class="arrow">→</span>
+          <span class="shuffled-number" style="background-color: ${user.color}; display: none;" id="number-${index}"></span>
+        `;
 
-        const entryText = document.createElement('span');
-        entryText.innerText = entry;
-
-        const editButton = document.createElement('i');
-        editButton.className = 'material-icons edit-icon';
-        editButton.innerText = 'edit';
-        editButton.addEventListener('click', function() {
-          editEntry(index);
+        // Add click event to toggle exclusion
+        entryItem.addEventListener('click', () => {
+          toggleExclude(index);
+          renderUsers(); // Re-render after exclusion
         });
 
-        // Exclude entry from shuffle when clicked/tapped
-        entryItem.addEventListener('click', function() {
-          toggleExclude(index, entryItem);
-        });
-
-        entryItem.appendChild(entryNumber);
-        entryItem.appendChild(entryText);
-        entryItem.appendChild(editButton);
-        entryList.appendChild(entryItem);
+        userList.appendChild(entryItem);
       });
     }
 
-    // Function to edit an entry
-    function editEntry(index) {
-      const newEntry = prompt('Edit the entry:', entries[index]);
-      if (newEntry !== null) {
-        entries[index] = newEntry.trim();  // Update the entry
-        displayEntries();  // Refresh the list
-      }
+    // Function to render shuffled numbers
+    function renderShuffledNumbers(shuffledIndices) {
+      shuffledIndices.forEach((originalIndex, shuffledIndex) => {
+        const shuffledNumberElem = document.getElementById(`number-${originalIndex}`);
+        if (shuffledNumberElem) {
+          shuffledNumberElem.textContent = shuffledIndex + 1; // Assign shuffled number
+          shuffledNumberElem.style.display = 'inline-flex'; // Show the number
+        }
+      });
     }
 
-    // Confirm all entries and disable input, remove edit buttons, and add numbers
-    confirmButton.addEventListener('click', function() {
-      document.getElementById('input-section').classList.add('hidden');  // Hide the input section
-      confirmButton.classList.add('hidden');  // Hide the confirm button
-
-      // Remove edit buttons and add numbers to entries
-      entryList.innerHTML = '';  // Clear the list for re-rendering
-      entries.forEach((entry, index) => {
-        const entryItem = document.createElement('div');
-        entryItem.className = 'entry-item';
-
-        const entryNumber = document.createElement('div');
-        entryNumber.className = 'circle-number';
-        entryNumber.innerText = index + 1;
-
-        const entryText = document.createElement('span');
-        entryText.innerText = entry;
-
-        entryItem.appendChild(entryNumber);
-        entryItem.appendChild(entryText);
-        entryList.appendChild(entryItem);
-
-        // Exclude entry from shuffle when clicked/tapped
-        entryItem.addEventListener('click', function() {
-          toggleExclude(index, entryItem);
-        });
-      });
-
-      shuffleButton.classList.remove('hidden');  // Show the shuffle button
-    });
-
-    // Shuffle the entries and assign random numbers to them
-    shuffleButton.addEventListener('click', function() {
-      const availableIndices = [...Array(entries.length).keys()].filter(i => !excludedIndices.has(i));
-      const shuffledNumbers = shuffleArray(availableIndices.map(x => x + 1));  // Shuffle only non-excluded entries
-
-      const entryItems = document.querySelectorAll('.entry-item');
-      entryItems.forEach((item, index) => {
-        const arrow = item.querySelector('.arrow');
-        if (arrow) {
-          arrow.remove();  // Remove old arrows if any
-        }
-        const shuffledDisplay = item.querySelector('.shuffled-number');
-        if (shuffledDisplay) {
-          shuffledDisplay.remove();  // Remove old shuffled number if any
-        }
-
-        if (!excludedIndices.has(index)) {
-          const newArrow = document.createElement('span');
-          newArrow.className = 'arrow';
-          newArrow.innerText = '→';
-
-          const shuffledNumber = document.createElement('div');
-          shuffledNumber.className = 'circle-number shuffled-number';
-          shuffledNumber.innerText = shuffledNumbers.shift();  // Assign shuffled number
-
-          item.appendChild(newArrow);
-          item.appendChild(shuffledNumber);
-        }
-      });
-    });
-
-    // Toggle exclusion of entry from shuffle
-    function toggleExclude(index, entryItem) {
+    // Function to toggle exclusion
+    function toggleExclude(index) {
+      const entryItem = userList.children[index];
       if (excludedIndices.has(index)) {
         excludedIndices.delete(index);
         entryItem.classList.remove('greyed-out');
