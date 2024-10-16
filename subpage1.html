@@ -32,21 +32,38 @@
       cursor: pointer;
       color: #3F51B5;
     }
+    .circle-number {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #3F51B5;
+      color: white;
+      text-align: center;
+      line-height: 30px;
+      margin-right: 10px;
+    }
     .hidden {
       display: none;
+    }
+    .icon-button {
+      position: absolute;
+      top: 16px;
+      left: 16px;
     }
   </style>
 </head>
 <body>
 
-  <!-- Header with Return to Homepage -->
+  <!-- Header with Return to Homepage (House Icon) -->
   <header class="mdl-layout__header">
     <div class="mdl-layout__header-row">
+      <div class="icon-button">
+        <a href="index.html" class="mdl-button mdl-js-button mdl-button--icon">
+          <i class="material-icons">home</i>
+        </a>
+      </div>
       <span class="mdl-layout-title">Subpage 1</span>
-      <div class="mdl-layout-spacer"></div>
-      <a href="index.html" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
-        Back to Home
-      </a>
     </div>
   </header>
 
@@ -74,6 +91,11 @@
         Confirm All Entries
       </button>
 
+      <!-- Shuffle button (hidden initially) -->
+      <button id="shuffleEntries" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored hidden">
+        Shuffle
+      </button>
+
     </div>
   </main>
 
@@ -82,6 +104,7 @@
     const entryInput = document.getElementById('entryInput');
     const entryList = document.getElementById('entryList');
     const confirmButton = document.getElementById('confirmEntries');
+    const shuffleButton = document.getElementById('shuffleEntries');
 
     // Function to add a new entry
     document.getElementById('addEntry').addEventListener('click', function() {
@@ -127,11 +150,53 @@
       }
     }
 
-    // Confirm all entries and disable input
+    // Confirm all entries and disable input, remove edit buttons, and add numbers
     confirmButton.addEventListener('click', function() {
       document.getElementById('input-section').classList.add('hidden');  // Hide the input section
       confirmButton.classList.add('hidden');  // Hide the confirm button
+
+      // Remove edit buttons and add numbers to entries
+      entryList.innerHTML = '';  // Clear the list for re-rendering
+      entries.forEach((entry, index) => {
+        const entryItem = document.createElement('div');
+        entryItem.className = 'entry-item';
+
+        const entryNumber = document.createElement('div');
+        entryNumber.className = 'circle-number';
+        entryNumber.innerText = index + 1;
+
+        const entryText = document.createElement('span');
+        entryText.innerText = entry;
+
+        entryItem.appendChild(entryNumber);
+        entryItem.appendChild(entryText);
+        entryList.appendChild(entryItem);
+      });
+
+      shuffleButton.classList.remove('hidden');  // Show the shuffle button
     });
+
+    // Shuffle the entries and assign random numbers to them
+    shuffleButton.addEventListener('click', function() {
+      const shuffledNumbers = shuffleArray([...Array(entries.length).keys()].map(x => x + 1));  // Generate numbers [1, 2, ..., n] and shuffle them
+
+      const entryItems = document.querySelectorAll('.entry-item');
+      entryItems.forEach((item, index) => {
+        const numberDisplay = document.createElement('span');
+        numberDisplay.innerText = shuffledNumbers[index];
+        numberDisplay.style.marginLeft = '10px';
+        item.appendChild(numberDisplay);
+      });
+    });
+
+    // Helper function to shuffle an array (Fisher-Yates shuffle)
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
   </script>
 
 </body>
