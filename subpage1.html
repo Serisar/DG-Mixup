@@ -29,6 +29,7 @@
       border-radius: 5px;
       transition: background-color 0.3s;
       font-weight: bold;
+      position: relative;
     }
     .edit-icon, .delete-icon {
       cursor: pointer;
@@ -65,8 +66,11 @@
       margin-left: 10px;
       margin-right: 10px;
     }
-    .align-right {
-      margin-left: auto;
+    .action-icons {
+      display: flex;
+      gap: 10px;
+      position: absolute;
+      right: 10px;
     }
   </style>
 </head>
@@ -115,17 +119,21 @@
 
       <!-- Reset button (hidden initially) -->
       <button id="resetEntries" class="mdl-button mdl-js-button mdl-button--raised hidden">
-        Reset to Edit
+        Reset
       </button>
 
-      <!-- Shuffle history (no longer needed for individual cards) -->
+      <!-- Shuffle history container -->
+      <div id="shuffle-history" class="shuffle-history"></div>
+
     </div>
   </main>
 
   <script>
     let entries = [];
     let excludedIndices = new Set(); // To track excluded entries
-    let userColors = {}; // Store colors for users to keep them consistent
+    let colorsAssigned = {}; // Store assigned colors for each user
+    let shuffleHistory = []; // Store the last 5 shuffles
+
     const entryInput = document.getElementById('entryInput');
     const entryList = document.getElementById('entryList');
     const confirmButton = document.getElementById('confirmEntries');
@@ -133,25 +141,19 @@
     const resetButton = document.getElementById('resetEntries');
 
     const colors = [
-      '#F44336', '#E91E63', '#9C27B0', '#673AB7', '#3F51B5',
-      '#2196F3', '#03A9F4', '#00BCD4', '#009688', '#4CAF50'
+      '#F44336', // Red
+      '#E91E63', // Pink
+      '#9C27B0', // Purple
+      '#673AB7', // Deep Purple
+      '#3F51B5', // Indigo
+      '#2196F3', // Blue
+      '#03A9F4', // Light Blue
+      '#00BCD4', // Cyan
+      '#009688', // Teal
+      '#4CAF50'  // Green
     ];
 
-    // Function to assign a random color from the color list
-    function assignRandomColor(entry) {
-      let randomColor = colors[Math.floor(Math.random() * colors.length)];
-      while (Object.values(userColors).includes(randomColor)) {
-        randomColor = colors[Math.floor(Math.random() * colors.length)]; // Ensure uniqueness of color
-      }
-      userColors[entry] = randomColor;
-    }
-
-    // Function to check if a name is valid (alphanumeric and non-empty)
-    function isValidName(value) {
-      return /^[a-zA-Z0-9]+$/.test(value.trim());
-    }
-
-    // Add entry function
+    // Function to add a new entry
     document.getElementById('addEntry').addEventListener('click', addEntry);
     entryInput.addEventListener('keypress', function(event) {
       if (event.key === 'Enter') {
@@ -161,151 +163,163 @@
 
     function addEntry() {
       const value = entryInput.value.trim();
-      if (value && isValidName(value)) {
+      if (value && /^[a-zA-Z0-9\s]+$/.test(value)) {
         entries.push(value);
-        if (!userColors[value]) {
-          assignRandomColor(value); // Assign random color to new entry
-        }
         displayEntries();
         entryInput.value = '';  // Clear the input field after entry
+      } else {
+        alert("Please enter a valid alphanumeric string.");
       }
     }
 
     // Function to display the entries in the list
     function displayEntries() {
       entryList.innerHTML = '';  // Clear the existing list
+      const usedColors = new Set(); // To keep track of used colors for number circles
+
       entries.forEach((entry, index) => {
         const entryItem = document.createElement('div');
         entryItem.className = 'entry-item';
-        entryItem.setAttribute('data-index', index); // Set index for later use in shuffling
 
         const entryNumber = document.createElement('div');
         entryNumber.className = 'circle-number';
+
+        // Assign persistent color for the user if not already assigned
+        if (!colorsAssigned[index]) {
+          let colorIndex;
+          do {
+            colorIndex = Math.floor(Math.random() * colors.length);
+          } while (usedColors.has(colorIndex) && usedColors.size < colors.length);
+          colorsAssigned[index] = colors[colorIndex];
+          usedColors.add(colorIndex);
+        }
+        entryNumber.style.backgroundColor = colorsAssigned[index]; // Use assigned color
         entryNumber.innerText = index + 1;
-        entryNumber.style.backgroundColor = userColors[entry]; // Use assigned color
+        entryItem.appendChild(entryNumber);
 
         const entryText = document.createElement('span');
         entryText.innerText = entry;
-        entryText.style.color = 'black'; // Ensure readability
+        entryText.style.color = 'black';
+
+        const actionIcons = document.createElement('div');
+        actionIcons.className = 'action-icons';
 
         const editButton = document.createElement('i');
         editButton.className = 'material-icons edit-icon';
         editButton.innerText = 'edit';
-        editButton.addEventListener('click', function () {
+        editButton.addEventListener('click', function() {
           editEntry(index);
         });
 
         const deleteButton = document.createElement('i');
         deleteButton.className = 'material-icons delete-icon';
         deleteButton.innerText = 'delete';
-        deleteButton.addEventListener('click', function () {
+        deleteButton.addEventListener('click', function() {
           deleteEntry(index);
         });
 
-        const shuffledNumber = document.createElement('div');
-        shuffledNumber.className = 'circle-number shuffled-number hidden'; // Initially hidden
-        shuffledNumber.innerText = '?'; // Placeholder before shuffling
-        shuffledNumber.style.backgroundColor = userColors[entry]; // Use the same color as original
+        actionIcons.appendChild(editButton);
+        actionIcons.appendChild(deleteButton);
 
-        const rightIcons = document.createElement('div');
-        rightIcons.className = 'align-right';
-        rightIcons.appendChild(shuffledNumber); // Attach shuffled number to the right side
-        rightIcons.appendChild(editButton);
-        rightIcons.appendChild(deleteButton);
-
-        entryItem.appendChild(entryNumber);
         entryItem.appendChild(entryText);
-        entryItem.appendChild(rightIcons);
+        entryItem.appendChild(actionIcons);
         entryList.appendChild(entryItem);
       });
     }
 
-    // Confirm button: Show shuffle/reset buttons and enable shuffling
-    confirmButton.addEventListener('click', () => {
-      shuffleButton.classList.remove('hidden');
-      resetButton.classList.remove('hidden');
-      confirmButton.classList.add('hidden');
-      disableEditIcons(); // Hide edit and delete icons when shuffling begins
+    // Confirm entries and prepare for shuffling
+    confirmButton.addEventListener('click', function() {
+      document.getElementById('input-section').classList.add('hidden');  // Hide the input section
+      confirmButton.classList.add('hidden');  // Hide the confirm button
+      shuffleButton.classList.remove('hidden');  // Show the shuffle button
+      resetButton.classList.remove('hidden');  // Show reset button
+      displayEntries();  // Re-render without edit/delete buttons
     });
 
-    // Shuffle function
-    shuffleButton.addEventListener('click', shuffleEntries);
+    // Shuffle the entries and assign random numbers to them
+    shuffleButton.addEventListener('click', function() {
+      const availableIndices = [...Array(entries.length).keys()].filter(i => !excludedIndices.has(i));
+      const shuffledNumbers = shuffleArray(availableIndices.map(x => x + 1));  // Shuffle only non-excluded entries
 
-    function shuffleEntries() {
-      let shuffledEntries = [...entries];
+      const entryItems = document.querySelectorAll('.entry-item');
+      entryItems.forEach((item, index) => {
+        const existingShuffled = item.querySelector('.shuffled-number');
+        if (existingShuffled) {
+          existingShuffled.remove();
+        }
 
-      // Remove excluded entries
-      shuffledEntries = shuffledEntries.filter((_, index) => !excludedIndices.has(index));
+        if (!excludedIndices.has(index)) {
+          const shuffledNumber = document.createElement('div');
+          shuffledNumber.className = 'circle-number shuffled-number';
+          shuffledNumber.innerText = shuffledNumbers.shift();  // Assign shuffled number
+          shuffledNumber.style.backgroundColor = colorsAssigned[index];  // Use the same color
+          shuffledNumber.style.color = 'black';
 
-      // Shuffle the remaining entries
-      for (let i = shuffledEntries.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffledEntries[i], shuffledEntries[j]] = [shuffledEntries[j], shuffledEntries[i]];
-      }
-
-      // Display shuffled results in the right place (aligned to each user card)
-      entries.forEach((entry, index) => {
-        const entryItem = document.querySelector(`.entry-item[data-index="${index}"]`);
-        const shuffledNumber = entryItem.querySelector('.shuffled-number');
-
-        if (excludedIndices.has(index)) {
-          shuffledNumber.classList.add('hidden'); // Hide for excluded users
-        } else {
-          shuffledNumber.classList.remove('hidden');
-          shuffledNumber.innerText = shuffledEntries.indexOf(entry) + 1; // Display shuffled number
+          item.appendChild(shuffledNumber);  // Add shuffled number to the right of user card
         }
       });
-    }
 
-    // Function to toggle exclusion
-    entryList.addEventListener('click', (event) => {
-      const entryItem = event.target.closest('.entry-item');
-      if (entryItem) {
-        const index = parseInt(entryItem.getAttribute('data-index'), 10);
-        if (excludedIndices.has(index)) {
-          excludedIndices.delete(index); // Re-include in shuffle
-          entryItem.classList.remove('greyed-out');
-        } else {
-          excludedIndices.add(index); // Exclude from shuffle
-          entryItem.classList.add('greyed-out');
-        }
-      }
+      updateShuffleHistory();  // Update history
     });
 
-    // Reset to edit mode
-    resetButton.addEventListener('click', () => {
-      shuffleButton.classList.add('hidden');
-      resetButton.classList.add('hidden');
-      confirmButton.classList.remove('hidden');
-      excludedIndices.clear();
-      enableEditIcons(); // Show edit and delete icons again
+    // Reset the entries to allow editing again
+    resetButton.addEventListener('click', function() {
+      document.getElementById('input-section').classList.remove('hidden');  // Show the input section
+      confirmButton.classList.remove('hidden');  // Show the confirm button
+      shuffleButton.classList.add('hidden');  // Hide the shuffle button
+      resetButton.classList.add('hidden');  // Hide reset button
+      displayEntries();  // Show entries with edit/delete buttons
     });
 
-    // Edit entry function
+    // Edit an entry
     function editEntry(index) {
-      const newName = prompt('Edit name:', entries[index]);
-      if (newName && isValidName(newName)) {
-        entries[index] = newName;
+      const newEntry = prompt("Edit the entry:", entries[index]);
+      if (newEntry && /^[a-zA-Z0-9\s]+$/.test(newEntry.trim())) {
+        entries[index] = newEntry.trim();
         displayEntries();
+      } else {
+        alert("Please enter a valid alphanumeric string.");
       }
     }
 
-    // Delete entry function
+    // Delete an entry
     function deleteEntry(index) {
       entries.splice(index, 1);
       displayEntries();
     }
 
-    // Hide edit icons
-    function disableEditIcons() {
-      const editIcons = document.querySelectorAll('.edit-icon, .delete-icon');
-      editIcons.forEach(icon => icon.classList.add('hidden'));
+    // Shuffle array helper function
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
     }
 
-    // Show edit icons
-    function enableEditIcons() {
-      const editIcons = document.querySelectorAll('.edit-icon, .delete-icon');
-      editIcons.forEach(icon => icon.classList.remove('hidden'));
+    // Handle exclusion toggle
+    entryList.addEventListener('click', function(event) {
+      const target = event.target.closest('.entry-item');
+      if (!target) return;
+
+      const index = [...entryList.children].indexOf(target);
+      if (excludedIndices.has(index)) {
+        excludedIndices.delete(index);
+        target.classList.remove('greyed-out');
+      } else {
+        excludedIndices.add(index);
+        target.classList.add('greyed-out');
+      }
+    });
+
+    // Update shuffle history, limit to last 5 shuffles
+    function updateShuffleHistory() {
+      const shuffleContainer = document.getElementById('shuffle-history');
+      const shuffleItems = shuffleContainer.children;
+
+      if (shuffleItems.length > 5) {
+        shuffleContainer.removeChild(shuffleItems[0]);  // Remove oldest shuffle
+      }
     }
   </script>
 
