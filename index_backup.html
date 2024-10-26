@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>My WebApp</title>
+
+  <!-- Include Material Design Lite CSS -->
+  <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+  <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+
+  <!-- Optional: Google Fonts for better typography -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons">
+  
+  <!-- Add custom CSS for responsive layout and styling -->
+  <style>
+    .page-content {
+      padding: 16px;
+    }
+
+    /* Flex container for the cards */
+    .card-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+
+    .mdl-card {
+      width: 100%; /* Default to full width for mobile */
+      margin-bottom: 20px;
+    }
+
+    /* For wider screens (landscape or desktop) */
+    @media(min-width: 768px) {
+      .mdl-card {
+        width: 45%; /* Take 45% of the width, two cards per row */
+      }
+    }
+
+    /* For even wider screens (desktops with larger resolutions) */
+    @media(min-width: 1024px) {
+      .mdl-card {
+        width: 30%; /* Take 30% of the width, three cards per row */
+      }
+    }
+
+    .mdl-card__title {
+      background-color: #3F51B5;
+      color: white;
+      padding: 16px;
+    }
+
+    .mdl-card__actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .mdl-button {
+      color: #3F51B5;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Main layout container -->
+  <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+    <!-- Header section -->
+    <header class="mdl-layout__header mdl-layout__header--waterfall">
+      <div class="mdl-layout__header-row">
+        <span class="mdl-layout-title">Home</span>
+        <div class="mdl-layout-spacer"></div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <main class="mdl-layout__content">
+      <div class="page-content">
+        <h3>Subpages</h3>
+
+        <!-- Card container to hold subpage cards -->
+        <div class="card-container">
+
+          <!-- Card for Subpage 1 -->
+          <div class="mdl-card mdl-shadow--4dp">
+            <div class="mdl-card__title">
+              <h2 class="mdl-card__title-text">Shuffled Throws</h2>
+            </div>
+            <div class="mdl-card__supporting-text">
+              Randomly assign individual people to a random other persons throw.
+            </div>
+            <div class="mdl-card__actions mdl-card--border">
+              <a href="subpage1.html" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+                Go to Subpage 1
+              </a>
+            </div>
+          </div>
+
+          <!-- Card for Subpage 2 -->
+          <div class="mdl-card mdl-shadow--4dp">
+            <div class="mdl-card__title">
+              <h2 class="mdl-card__title-text">Subpage 2</h2>
+            </div>
+            <div class="mdl-card__supporting-text">
+              Short description of Subpage 2.
+            </div>
+            <div class="mdl-card__actions mdl-card--border">
+              <a href="subpage2.html" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+                Go to Subpage 2
+              </a>
+            </div>
+          </div>
+
+          <!-- Card for Subpage 3 -->
+          <div class="mdl-card mdl-shadow--4dp">
+            <div class="mdl-card__title">
+              <h2 class="mdl-card__title-text">Subpage 3</h2>
+            </div>
+            <div class="mdl-card__supporting-text">
+              Short description of Subpage 3.
+            </div>
+            <div class="mdl-card__actions mdl-card--border">
+              <a href="subpage3.html" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--colored">
+                Go to Subpage 3
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+</body>
+</html>
