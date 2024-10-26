@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shuffled Throws</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <script type="importmap">
+    {
+      "imports": {
+        "@material/web/": "https://esm.run/@material/web/"
+      }
+    }
+  </script>
+  <script type="module">
+    import '@material/web/all.js';
+    import {styles as typescaleStyles} from '@material/web/typography/md-typescale-styles.js';
+    document.adoptedStyleSheets.push(typescaleStyles.styleSheet);
+  </script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=cancel" />
+</head>
+
+<style>
+  .material-symbols-rounded {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  body {
+    background-color: cornsilk;
+    font-family: 'Roboto', sans-serif;
+  }
+  .page-content {
+    padding: 32px;
+    margin: auto;
+    width: 400px;
+  }
+  .entry-list {
+    margin-top: 20px;
+  }
+  .player-entry {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #f5deb3;
+    padding: 8px 16px;
+    margin: 8px 0;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 1rem;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  .player-entry.excluded {
+    background-color: #d3d3d3;
+    color: #a9a9a9;
+  }
+  .player-index,
+  .player-new-index {
+    color: white;
+    font-weight: bold;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .player-name {
+    flex-grow: 1;
+    text-align: left;
+    padding-left: 8px;
+  }
+  .hidden {
+    display: none;
+  }
+  .past-shuffle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px; /* Ensure it’s the same as width */
+    margin-left: 4px;
+    border-radius: 50%;
+    color: white;
+    font-size: 0.9rem;
+    background-color: #ccc;
+}
+
+</style>
+
+<body>
+  <div class="page-content">
+    <h1 class="md-typescale-display-medium">Player Shuffle</h1>
+    <div id="inputSection" class="entry-list">
+      <md-outlined-text-field id="playerNameInput" label="Player names go here"></md-outlined-text-field>
+      <div class="entry-list">
+        <md-filled-button id="addPlayerButton" type="button">Add player</md-filled-button>
+        <md-filled-button id="resetButton" type="button">Reset</md-filled-button>
+      </div>
+    </div>
+    <div id="playersContainer" class="entry-list"></div>
+    <div class="entry-list">
+      <md-filled-button id="confirmButton" class="hidden" type="button">Confirm</md-filled-button>
+      <md-filled-button id="shuffleButton" class="hidden" type="button">Shuffle</md-filled-button>
+      <md-filled-button id="backButton" class="hidden" type="button">Back</md-filled-button>
+    </div>
+
+    <!-- Player entry template -->
+    <template id="player-template">
+      <div class="player-entry" data-index="">
+        <div class="player-index" style="background-color: lightgrey;">1</div>
+        <div class="player-name">Player Name</div>
+        <div class="player-new-index hidden" style="background-color: lightgrey;">1</div>
+        <div class="history-container"></div> <!-- Container for past shuffles -->
+      </div>
+    </template>
+  </div>
+
+  <script>
+    const playerNameInput = document.getElementById('playerNameInput');
+    const addPlayerButton = document.getElementById('addPlayerButton');
+    const resetButton = document.getElementById('resetButton');
+    const playersContainer = document.getElementById('playersContainer');
+    const playerTemplate = document.getElementById('player-template');
+    const confirmButton = document.getElementById('confirmButton');
+    const backButton = document.getElementById('backButton');
+    const shuffleButton = document.getElementById('shuffleButton');
+    const inputSection = document.getElementById('inputSection');
+
+    const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50'];
+    let playerEntries = [];
+
+    function addPlayer() {
+      const playerName = playerNameInput.value.trim();
+      if (playerName) {
+        const playerEntry = playerTemplate.content.cloneNode(true);
+        const playerIndex = playersContainer.childElementCount;
+        const color = colors[playerIndex % colors.length];
+
+        const entryElement = playerEntry.querySelector('.player-entry');
+        entryElement.querySelector('.player-index').textContent = playerIndex + 1;
+        entryElement.querySelector('.player-index').style.backgroundColor = color;
+        entryElement.querySelector('.player-name').textContent = playerName;
+
+        // Add history container for displaying past shuffles
+        const historyContainer = entryElement.querySelector('.history-container');
+        historyContainer.innerHTML = '';
+
+        // Attach event for toggling exclusion
+        entryElement.addEventListener('click', () => toggleExclusion(entryElement, playerIndex));
+
+        playersContainer.appendChild(entryElement);
+
+        // Initialize history for player entry
+        playerEntries.push({ name: playerName, color, index: playerIndex + 1, excluded: false, history: [] });
+
+        playerNameInput.value = '';
+
+        if (playerEntries.length >= 2) {
+          confirmButton.classList.remove('hidden');
+        }
+      }
+    }
+
+    function resetPlayers() {
+      playersContainer.innerHTML = '';
+      playerNameInput.value = '';
+      confirmButton.classList.add('hidden');
+      playerEntries = [];
+    }
+
+    function confirmPlayers() {
+      inputSection.classList.add('hidden');
+      confirmButton.classList.add('hidden');
+      shuffleButton.classList.remove('hidden');
+      backButton.classList.remove('hidden');
+    }
+
+    function shufflePlayers() {
+      const shufflePool = playerEntries.filter(player => !player.excluded);
+      const shuffledIndexes = shufflePool.map(player => player.index).sort(() => Math.random() - 0.5);
+
+      [...playersContainer.children].forEach((playerEntry, i) => {
+        const player = playerEntries[i];
+        const newIndexDiv = playerEntry.querySelector('.player-new-index');
+
+        if (player.excluded) {
+          newIndexDiv.classList.add('hidden');
+        } else {
+          const newNumber = shuffledIndexes.pop();
+          const originalColor = colors[newNumber - 1];
+
+          player.history.unshift(newNumber);
+          if (player.history.length > 5) player.history.pop();
+
+          newIndexDiv.textContent = newNumber;
+          newIndexDiv.style.backgroundColor = originalColor;
+          newIndexDiv.classList.remove('hidden');
+
+          const historyContainer = playerEntry.querySelector('.history-container');
+          historyContainer.innerHTML = '';
+          player.history.slice(1).forEach(pastNumber => {
+            const pastDiv = document.createElement('div');
+            pastDiv.textContent = pastNumber;
+            pastDiv.style.backgroundColor = '#ccc';
+            pastDiv.classList.add('past-shuffle');
+            historyContainer.appendChild(pastDiv);
+          });
+        }
+      });
+    }
+
+    function backToInputMode() {
+      inputSection.classList.remove('hidden');
+      confirmButton.classList.remove('hidden');
+      shuffleButton.classList.add('hidden');
+      backButton.classList.add('hidden');
+
+      [...playersContainer.children].forEach((playerEntry) => {
+        playerEntry.querySelector('.player-new-index').classList.add('hidden');
+      });
+    }
+
+    function toggleExclusion(playerElement, index) {
+      const player = playerEntries[index];
+      player.excluded = !player.excluded;
+
+      playerElement.classList.toggle('excluded', player.excluded);
+      playerElement.querySelector('.player-index').style.backgroundColor = player.excluded ? '#d3d3d3' : player.color;
+    }
+
+    addPlayerButton.addEventListener('click', addPlayer);
+    resetButton.addEventListener('click', resetPlayers);
+    confirmButton.addEventListener('click', confirmPlayers);
+    shuffleButton.addEventListener('click', shufflePlayers);
+    backButton.addEventListener('click', backToInputMode);
+
+    playerNameInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        addPlayer();
+      }
+    });
+  </script>
+</body>
+</html>
